@@ -428,10 +428,10 @@ func BenchmarkUpstreamConfig_GetUpstreamsForDomain(b *testing.B) {
 	// Most recent results:
 	//
 	//	goos: darwin
-	//	goarch: amd64
+	//	goarch: arm64
 	//	pkg: github.com/AdguardTeam/dnsproxy/proxy
-	//	cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-	//	BenchmarkGetUpstreamsForDomain/get-12         	22438213	        46.05 ns/op	       0 B/op	       0 allocs/op
+	//	cpu: Apple M4 Pro
+	//  BenchmarkUpstreamConfig_GetUpstreamsForDomain/get-14    48695488    24.51 ns/op     0 B/op	0 allocs/op
 }
 
 // assertUpstreamsAddrs checks the addresses of ups to exactly match want.
