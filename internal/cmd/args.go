@@ -69,6 +69,7 @@ const (
 	usePrivateRDNSIdx
 	dohRoutesIdx
 	dohInsecureEnabledIdx
+	dnssecDisabledIdx
 )
 
 // commandLineOption contains information about a command-line option: its long
@@ -419,6 +420,12 @@ var commandLineOptions = []*commandLineOption{
 		short:       "",
 		valueType:   "",
 	},
+	dnssecDisabledIdx: {
+		description: "If specified, the proxy won't manage the DO bits.",
+		long:        "dnssec-disabled",
+		short:       "",
+		valueType:   "",
+	},
 }
 
 // parseCmdLineOptions parses the command-line options.  conf must not be nil.
@@ -480,6 +487,7 @@ func parseCmdLineOptions(conf *configuration) (err error) {
 		usePrivateRDNSIdx:           &conf.UsePrivateRDNS,
 		dohRoutesIdx:                &conf.DoHRoutes,
 		dohInsecureEnabledIdx:       &conf.DoHInsecureEnabled,
+		dnssecDisabledIdx:           &conf.DNSSECDisabled,
 	} {
 		addOption(flags, fieldPtr, commandLineOptions[i])
 	}

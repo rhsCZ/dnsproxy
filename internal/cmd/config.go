@@ -194,6 +194,10 @@ type configuration struct {
 	// RefuseAny makes the server to refuse requests of type ANY.
 	RefuseAny bool `yaml:"refuse-any"`
 
+	// DNSSECEnabled defines whether the proxy should set the DO bits in the
+	// upstream requests.
+	DNSSECDisabled bool `yaml:"dnssec-disabled"`
+
 	// EnableEDNSSubnet uses EDNS Client Subnet extension.
 	EnableEDNSSubnet bool `yaml:"edns"`
 
