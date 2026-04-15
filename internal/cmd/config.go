@@ -196,7 +196,7 @@ type configuration struct {
 
 	// DNSSECEnabled defines whether the proxy should set the DO bits in the
 	// upstream requests.
-	DNSSECDisabled bool `yaml:"dnssec-disabled"`
+	DNSSECEnabled bool `yaml:"dnssec"`
 
 	// EnableEDNSSubnet uses EDNS Client Subnet extension.
 	EnableEDNSSubnet bool `yaml:"edns"`
@@ -227,6 +227,7 @@ func parseConfig() (conf *configuration, exitCode int, err error) {
 		OptimisticMaxAge:       timeutil.Duration(proxy.DefaultOptimisticMaxAge),
 		RatelimitSubnetLenIPv4: 24,
 		RatelimitSubnetLenIPv6: 56,
+		DNSSECEnabled:          true,
 		HostsFileEnabled:       true,
 		PendingRequestsEnabled: true,
 	}
