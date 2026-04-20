@@ -7,7 +7,6 @@
 'permissions': {}
 'env':
   'GO_VERSION': '1.26.1'
-
 'on':
   'push':
     'tags':
@@ -15,7 +14,6 @@
     # Builds from the master branch will be pushed with the `dev` tag.
     'branches':
       - 'master'
-
 'jobs':
   'docker':
     'permissions':
@@ -67,16 +65,15 @@
             DOCKER_PUSH="1" \
             VERBOSE="1" \
             docker
-
   'notify':
     'needs':
       - 'docker'
-    'if':
+    'if': |
       ${{ always() &&
-      (
-      github.event_name == 'push' ||
-      github.event.pull_request.head.repo.full_name == github.repository
-      )
+        (
+          github.event_name == 'push' ||
+          github.event.pull_request.head.repo.full_name == github.repository
+        )
       }}
     'permissions':
       # Required by workflow-conclusion-action to check workflow status.
