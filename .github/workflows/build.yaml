@@ -51,6 +51,8 @@ jobs:
     needs:
       - tests
     'permissions':
+      # Required to check workflow status.
+      'actions': 'read'
       # Required by actions/create-release.
       'contents': 'write'
     runs-on: ubuntu-latest
