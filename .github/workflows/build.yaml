@@ -26,9 +26,8 @@ jobs:
           - macos-latest
           - ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - 'uses': 'actions/checkout@v6'
         'with':
-          'fetch-depth': 0
           # Set to false to avoid  GITHUB_TOKEN leaking.
           #
           # See https://github.com/actions/checkout/issues/485#issuecomment-934422611.
@@ -57,9 +56,8 @@ jobs:
       'contents': 'write'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - 'uses': 'actions/checkout@v6'
         'with':
-          'fetch-depth': 0
           # Set to false to avoid  GITHUB_TOKEN leaking.
           #
           # See https://github.com/actions/checkout/issues/485#issuecomment-934422611.
