@@ -35,6 +35,7 @@
         'run': 'make go-deps go-lint'
   'notify':
     'needs':
+      - 'go-lint'
     # Secrets are not passed to workflows that are triggered by a pull request
     # from a fork.
     #
