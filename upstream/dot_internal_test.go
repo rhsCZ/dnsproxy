@@ -67,7 +67,6 @@ func TestUpstream_dnsOverTLS_race(t *testing.T) {
 	wg := sync.WaitGroup{}
 	for range count {
 		wg.Go(func() {
-
 			pt := testutil.PanicT{}
 
 			req := createTestMessage()
