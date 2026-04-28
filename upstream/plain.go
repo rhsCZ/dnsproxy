@@ -133,20 +133,19 @@ func (p *plainDNS) dialExchange(
 // setRequestForNetwork sets connection options in conn and overrides the
 // upstream request, if necessary, depending on network.  If network is
 // [networkUDP] and orig has a zero ID, req is a copy of orig with a new ID to
-// increase entropy.
+// increase entropy.  network must be either [networkUDP] or [networkTCP].  orig
+// and conn must not be nil.
 func setRequestForNetwork(orig *dns.Msg, conn *dns.Conn, network network) (req *dns.Msg) {
 	req = orig
 	if network != networkUDP {
 		return req
 	}
 
-	if network == networkUDP {
-		conn.UDPSize = dns.MinMsgSize
+	conn.UDPSize = dns.MinMsgSize
 
-		if orig.Id == 0 {
-			req = orig.Copy()
-			req.Id = dns.Id()
-		}
+	if orig.Id == 0 {
+		req = orig.Copy()
+		req.Id = dns.Id()
 	}
 
 	return req
