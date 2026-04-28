@@ -526,8 +526,8 @@ func loadServersList(sources []string) []string {
 			servers = append(servers, source)
 		}
 
-		lines := strings.Split(string(data), "\n")
-		for _, line := range lines {
+		lines := strings.SplitSeq(string(data), "\n")
+		for line := range lines {
 			line = strings.TrimSpace(line)
 
 			// Ignore comments in the file.

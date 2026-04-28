@@ -285,7 +285,7 @@ func (p *dnsOverQUIC) getBytesPool() (pool *sync.Pool) {
 
 	if p.bytesPool == nil {
 		p.bytesPool = &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				b := make([]byte, dns.MaxMsgSize)
 
 				return &b
