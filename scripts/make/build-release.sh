@@ -10,7 +10,8 @@ elif [ "$verbose" -gt '1' ]; then
 	set -x
 fi
 
-set -e -f -u
+# Don't use -f, because we use globs in this script.
+set -e -u
 
 log() {
 	if [ "$verbose" -gt '0' ]; then
@@ -21,9 +22,29 @@ log() {
 
 log 'starting to build dnsproxy release'
 
-version="${VERSION:-}"
-readonly version
+version="${GITHUB_REF:-}"
+version="${version##*/}"
+is_ci=1
 
+if [ -z "$version" ]; then
+	version="${VERSION:-please set VERSION}"
+	is_ci=0
+fi
+
+if case "$version" in v*) true ;; *) false ;; esac then
+	version='dev'
+elif ! echo "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+(' -q; then
+	echo "version is invalid '$version'" 1>&2
+
+	exit 1
+fi
+
+if [ "$is_ci" = '1' ]; then
+	github_env="${GITHUB_ENV:-}"
+	echo "RELEASE_VERSION=\"${version}\"" >>"$github_env"
+fi
+
+readonly version
 log "version '$version'"
 
 dist="${DIST_DIR:-build}"
