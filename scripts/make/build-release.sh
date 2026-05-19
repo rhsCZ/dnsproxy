@@ -31,13 +31,18 @@ if [ -z "$version" ]; then
 	is_ci=0
 fi
 
-if case "$version" in v*) true ;; *) false ;; esac then
-	version='dev'
-elif ! echo "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+(' -q; then
-	echo "version is invalid '$version'" 1>&2
+case "$version" in
+v*)
+	if ! echo "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+$' -q; then
+		echo "version is invalid '$version'" 1>&2
 
-	exit 1
-fi
+		exit 1
+	fi
+	;;
+*)
+	version='dev'
+	;;
+esac
 
 if [ "$is_ci" = '1' ]; then
 	github_env="${GITHUB_ENV:-}"
