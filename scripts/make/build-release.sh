@@ -27,7 +27,7 @@ version="${version##*/}"
 is_ci=1
 
 if [ -z "$version" ]; then
-	version="${VERSION:-please set VERSION}"
+	version="${VERSION:?please set VERSION}"
 	is_ci=0
 fi
 
