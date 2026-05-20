@@ -720,7 +720,12 @@ func (p *Proxy) Resolve(ctx context.Context, dctx *DNSContext) (err error) {
 		}
 
 		// On cache miss request for DNSSEC from the upstream to cache the
-		// DNSSEC resource records as well.
+		// DNSSEC resource records as well.  In case of disabled DNSSEC,
+		// requesting and therefore caching of DNSSEC resource records depends
+		// on the DO bit of the initiating query.
+		//
+		// See https://datatracker.ietf.org/doc/html/rfc4035#section-4.5 and
+		// https://datatracker.ietf.org/doc/html/rfc3225#section-3.
 		p.addDO(dctx.Req)
 	}
 
