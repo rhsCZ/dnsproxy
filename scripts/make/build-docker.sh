@@ -26,8 +26,8 @@ fi
 
 case "$version" in
 v*)
-	if ! echo "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+$' -q; then
-		echo "version is invalid '$version'" 1>&2
+	if ! printf '%s\n' "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+$' -q; then
+		printf "version is invalid '%s'\n" "$version" 1>&2
 
 		exit 1
 	fi
