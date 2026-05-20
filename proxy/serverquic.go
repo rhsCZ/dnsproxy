@@ -222,7 +222,7 @@ func (p *Proxy) handleQUICConnection(
 		// bidirectional stream.
 		stream, err := p.acceptStream(ctx, conn)
 		if err != nil {
-			logQUICError(ctx, "accepting quic stream", err, p.logger)
+			logQUICStreamError(ctx, "accepting quic stream", err, p.logger)
 
 			// Close the connection to make sure resources are freed.
 			closeQUICConn(conn, DoQCodeNoError, p.logger)
@@ -250,6 +250,16 @@ func (p *Proxy) handleQUICConnection(
 			_ = stream.Close()
 		}()
 	}
+}
+
+// logQUICStreamError writes suitable log message for the given err.  Skips
+// [context.ErrDeadlineExceeded] and timeout errors.  l must not be nil.
+func logQUICStreamError(ctx context.Context, prefix string, err error, l *slog.Logger) {
+	if isNonCriticalNetError(err) {
+		return
+	}
+
+	logQUICError(ctx, prefix, err, l)
 }
 
 // acceptStream accepts and starts processing a single QUIC stream.  All
