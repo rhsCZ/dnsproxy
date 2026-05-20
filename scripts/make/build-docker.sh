@@ -10,33 +10,12 @@ else
 	set +x
 fi
 
-# Don't use -f, because we use globs in this script.
-set -e -u
+set -e -f -u
 
 # Require these to be set.
 commit="${REVISION:?please set REVISION}"
 dist_dir="${DIST_DIR:?please set DIST_DIR}"
-
-version="${VERSION:-}"
-
-if [ -z "$version" ]; then
-	version="${GITHUB_REF:-}"
-	version="${version##*/}"
-fi
-
-case "$version" in
-v*)
-	if ! printf '%s\n' "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+$' -q; then
-		printf "version is invalid '%s'\n" "$version" 1>&2
-
-		exit 1
-	fi
-	;;
-*)
-	version='dev'
-	;;
-esac
-
+version="${VERSION:?please set VERSION}"
 readonly commit dist_dir version
 
 # Allow users to use sudo.
