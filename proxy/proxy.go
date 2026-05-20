@@ -719,8 +719,8 @@ func (p *Proxy) Resolve(ctx context.Context, dctx *DNSContext) (err error) {
 			return nil
 		}
 
-		// On cache miss request for DNSSEC from the upstream to cache it
-		// afterwards.
+		// On cache miss request for DNSSEC from the upstream to cache the
+		// DNSSEC resource records as well.
 		p.addDO(dctx.Req)
 	}
 
@@ -800,12 +800,6 @@ func (p *Proxy) cacheWorks(dctx *DNSContext) (ok bool) {
 		// Don't cache the requests intended for local upstream servers, those
 		// should be fast enough as is.
 		reason = "requested address is private"
-	case !p.DNSSECEnabled && !dctx.doBit:
-		// Don't cache the responses without DNSSEC RRs if DNSSEC is disabled
-		// and DO bit is not set, since those responses may differ from the ones
-		// with DNSSEC RRs and thus may be not the desired result for user.  In
-		// case DNSSEC is enabled in the proxy, the DO bit will be enforced.
-		reason = "dnssec disabled"
 	case dctx.Req.CheckingDisabled:
 		// Also don't lookup the cache for responses with DNSSEC checking
 		// disabled since only validated responses are cached and those may be
