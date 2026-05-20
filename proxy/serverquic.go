@@ -49,18 +49,6 @@ const quicAddrValidatorCacheSize = 1000
 const quicAddrValidatorCacheTTL = 30 * time.Minute
 
 const (
-	// DefaultDoQIdleTimeout is the default timeout for accepting DoQ
-	// connections.
-	DefaultDoQIdleTimeout = 2 * time.Second
-
-	// DefaultDoQReadTimeout is the default timeout for DoQ reading operations.
-	DefaultDoQReadTimeout = 2 * time.Second
-
-	// DefaultDoQWriteTimeout is the default timeout for DoQ writing operations.
-	DefaultDoQWriteTimeout = 2 * time.Second
-)
-
-const (
 	// DoQCodeNoError is used when the connection or stream needs to be closed,
 	// but there is no error to signal.
 	DoQCodeNoError quic.ApplicationErrorCode = 0
@@ -180,7 +168,7 @@ func (p *Proxy) acceptQUICConn(
 	ctx context.Context,
 	l *quic.EarlyListener,
 ) (conn *quic.Conn, err error) {
-	acceptCtx, cancel := context.WithDeadline(ctx, p.time.Now().Add(DefaultDoQIdleTimeout))
+	acceptCtx, cancel := context.WithDeadline(ctx, p.time.Now().Add(defaultTimeout))
 	defer cancel()
 
 	return l.Accept(acceptCtx)
@@ -296,12 +284,12 @@ func (p *Proxy) acceptStream(
 		return nil, fmt.Errorf("accepting quic stream: %w", err)
 	}
 
-	err = stream.SetReadDeadline(p.time.Now().Add(DefaultDoQReadTimeout))
+	err = stream.SetReadDeadline(p.time.Now().Add(defaultTimeout))
 	if err != nil {
 		return nil, fmt.Errorf("setting read deadline: %w", err)
 	}
 
-	err = stream.SetWriteDeadline(p.time.Now().Add(DefaultDoQWriteTimeout))
+	err = stream.SetWriteDeadline(p.time.Now().Add(defaultTimeout))
 	if err != nil {
 		return nil, fmt.Errorf("setting write deadline: %w", err)
 	}
