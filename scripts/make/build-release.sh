@@ -16,7 +16,7 @@ set -e -u
 log() {
 	if [ "$verbose" -gt '0' ]; then
 		# Don't use quotes to get word splitting.
-		echo "$1" 1>&2
+		printf '%s\n' "$1" 1>&2
 	fi
 }
 
