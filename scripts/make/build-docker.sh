@@ -16,17 +16,16 @@ set -e -u
 # Require these to be set.
 commit="${REVISION:?please set REVISION}"
 dist_dir="${DIST_DIR:?please set DIST_DIR}"
-version="${GITHUB_REF:-}"
-version="${version##*/}"
-is_ci=1
+
+version="${VERSION:-}"
 
 if [ -z "$version" ]; then
-	version="${VERSION:?please set VERSION}"
-	is_ci=0
+	version="${GITHUB_REF:-}"
+	version="${version##*/}"
 fi
 
 case "$version" in
-v* | "")
+v*)
 	if ! echo "$version" | grep -E -e '^v[0-9]+\.[0-9]+\.[0-9]+$' -q; then
 		echo "version is invalid '$version'" 1>&2
 
@@ -37,11 +36,6 @@ v* | "")
 	version='dev'
 	;;
 esac
-
-if [ "$is_ci" = '1' ]; then
-	github_env="${GITHUB_ENV:-}"
-	echo "RELEASE_VERSION=\"${version}\"" >>"$github_env"
-fi
 
 readonly commit dist_dir version
 

@@ -22,13 +22,11 @@ log() {
 
 log 'starting to build dnsproxy release'
 
-version="${GITHUB_REF:-}"
-version="${version##*/}"
-is_ci=1
+version="${VERSION:-}"
 
 if [ -z "$version" ]; then
-	version="${VERSION:?please set VERSION}"
-	is_ci=0
+	version="${GITHUB_REF:-}"
+	version="${version##*/}"
 fi
 
 case "$version" in
@@ -43,11 +41,6 @@ v*)
 	version='dev'
 	;;
 esac
-
-if [ "$is_ci" = '1' ]; then
-	github_env="${GITHUB_ENV:-}"
-	echo "RELEASE_VERSION=\"${version}\"" >>"$github_env"
-fi
 
 readonly version
 log "version '$version'"
