@@ -48,13 +48,13 @@
           set -e -f -o pipefail -u -x
 
           # TODO(d.kolyshev):  Use AdGuardSoftwareLimited/actions/actions/docker-build.
-          make \
+          env \
               APP_VERSION=${{ github.ref_name }} \
               DOCKER_IMAGE_NAME='adguard/dnsproxy' \
               DIST_DIR=${{ env.DIST_DIR }} \
               REVISION=${{ github.sha }} \
               VERBOSE='1' \
-              build-docker \
+              sh ./scripts/make/build-docker.sh \
               ;
   'PublishGitHubRelease':
     'if': |
