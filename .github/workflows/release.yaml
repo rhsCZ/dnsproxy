@@ -4,7 +4,7 @@
   'CACHE_BUSTER': |-
     ${{ vars.CACHE_BUSTER || '0' }}
   'DIST_DIR': |-
-    ${{ vars.DIST_DIR || 'build' }}
+    build
 'jobs':
   'BuildAndPublishDocker':
     'if': |
@@ -40,19 +40,19 @@
         'with':
           'name': 'dnsproxy'
           path: |
-            build/dnsproxy-*
+            ${{ env.DIST_DIR }}/dnsproxy-*
       - 'name': 'Publish to Docker Hub'
         'run': |-
-          set -e -o pipefail -u -x
+          set -e -f -o pipefail -u -x
 
           # TODO(d.kolyshev):  Use AdGuardSoftwareLimited/actions/actions/docker-build.
-          env \
+          make \
               APP_VERSION=${{ github.ref_name }} \
               DOCKER_IMAGE_NAME='adguard/dnsproxy' \
               DIST_DIR=${{ env.DIST_DIR }} \
               REVISION=${{ github.sha }} \
               VERBOSE='1' \
-              sh ./scripts/make/build-docker.sh \
+              build-docker \
               ;
   'PublishGitHubRelease':
     'if': |

@@ -100,6 +100,8 @@ clean: ; $(ENV) $(GO.MACRO) clean && rm -f -r '$(DIST_DIR)'
 release: clean
 	$(ENV) "$(SHELL)" ./scripts/make/build-release.sh
 
+.PHONY: build-docker
+build-docker: ; $(ENV) "$(SHELL)" ./scripts/make/build-docker.sh
+
 .PHONY: docker
-docker: release
-	$(ENV) "$(SHELL)" ./scripts/make/build-docker.sh
+docker: release build-docker
