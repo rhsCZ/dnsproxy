@@ -59,7 +59,10 @@
               ;
   'PublishGitHubRelease':
     'if': |
-      ${{ github.repository_owner == 'AdGuardSoftwareLimited' }}
+      ${{
+        (github.ref_type == 'tag' || github.event_name == 'workflow_dispatch')
+        && github.repository_owner == 'AdGuardSoftwareLimited'
+      }}
     'needs': 'BuildAndPublishDocker'
     'permissions':
       # Download the artifact (release write goes via the Octopass token).
