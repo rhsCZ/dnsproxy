@@ -42,18 +42,19 @@
           path: |
             ${{ env.DIST_DIR }}/dnsproxy-*
       - 'name': 'Publish to Docker Hub'
-        'run': |-
+        'run': |
+          #!/bin/sh
+
           set -e -f -o pipefail -u -x
 
           # TODO(d.kolyshev):  Use AdGuardSoftwareLimited/actions/actions/docker-build.
-          env \
+          make \
               APP_VERSION=${{ github.ref_name }} \
               DOCKER_IMAGE_NAME='adguard/dnsproxy' \
-              DOCKER_PUSH='1' \
               DIST_DIR=${{ env.DIST_DIR }} \
               REVISION=${{ github.sha }} \
               VERBOSE='1' \
-              sh ./scripts/make/build-docker.sh \
+              build-docker \
               ;
   'PublishGitHubRelease':
     'if': |
@@ -77,7 +78,8 @@
     'tags':
       - 'v*'
     'branches':
-      - 'master'
+      # TODO(d.kolyshev): !! Set back to master.
+      - '*'
   'workflow_dispatch': null
 # Permissions are disabled for all the jobs by default, and then overridden for
 # specific jobs if needed.  This is a recommended practice for security reasons,
