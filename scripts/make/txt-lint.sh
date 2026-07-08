@@ -30,6 +30,7 @@ trailing_newlines() (
 		-type 'f' \
 		'!' '(' \
 		-name '*.exe' \
+		-o -name '*.bin' \
 		-o -name '*.out' \
 		-o -name '*.test' \
 		-o -name 'dnsproxy' \
@@ -50,6 +51,7 @@ trailing_whitespace() {
 		-type 'f' \
 		'!' '(' \
 		-name '*.exe' \
+		-o -name '*.bin' \
 		-o -name '*.out' \
 		-o -name '*.test' \
 		-o -name 'dnsproxy' \
