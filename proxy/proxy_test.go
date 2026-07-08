@@ -231,8 +231,7 @@ func TestProxy_jiggleVulnerability(t *testing.T) {
 		Upstreams: []upstream.Upstream{ups},
 	}
 
-	// TODO(f.setrakov): !! Improve test case names or consider not using
-	// testdata.
+	// TODO(f.setrakov): !! Imp test case names or consider not using testdata.
 	testCases := []string{
 		"1004_client_subnet_option_ecs_with_private_ip_but_querying_public_dns",
 		"1086_query_for_dnssec_chain_validation_but_cd_1_disables_chain_checking",
@@ -250,7 +249,6 @@ func TestProxy_jiggleVulnerability(t *testing.T) {
 		"1294_ecs_source_prefix_length_set_to_255_exceeds_ip_address_bits",
 		"1325_edns_padding_option_at_the_beginning_instead_of_end",
 		"1326_edns_options_with_duplicate_option_codes",
-		"1367_query_with_multiple_edns_options_each_claiming_large_lengths",
 		"1370_query_with_opt_rr_header_complete_but_rdata_truncated",
 		"1372_query_with_edns_option_option_length_extending_beyond_packet",
 		"1435_edns_option_chain_with_backward_option_code_ordering",
@@ -290,29 +288,49 @@ func TestProxy_jiggleVulnerability(t *testing.T) {
 		"996_tiny_udp_payload_size_64_declared_but_rdlength_claims_1000_bytes_of_options",
 	}
 
+	testDataPath := filepath.Join("testdata", t.Name())
 	for _, name := range testCases {
-		testDataPath := filepath.Join("testdata", t.Name())
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			p, err := proxy.New(&proxy.Config{
-				UDPListenAddr:  []*net.UDPAddr{net.UDPAddrFromAddrPort(localhostAnyPort)},
-				UpstreamConfig: upsConf,
-				Logger:         testLogger,
-			})
-			require.NoError(t, err)
-			require.NotNil(t, p)
-
-			servicetest.RequireRun(t, p, testTimeout)
-
-			data, err := os.ReadFile(filepath.Join(testDataPath, name+".bin"))
-			require.NoError(t, err)
-
-			addr := p.Addr(proxy.ProtoUDP)
-			exchangeData(t, addr.String(), data)
+			testJiggleVulnerability(t, filepath.Join(testDataPath, name+".bin"), upsConf)
 		})
 	}
+
+	// NOTE: This case must not run on darwin systems by default, because the
+	// default maximum value of UDP datagrams on such systems is less than the
+	// actual maximum UDP message size.
+	//
+	// TODO(f.setrakov): !! Imp name.
+	tc := "1367_query_with_multiple_edns_options_each_claiming_large_lengths"
+	t.Run(tc, func(t *testing.T) {
+		t.Parallel()
+
+		skipDarwin(t)
+		testJiggleVulnerability(t, filepath.Join(testDataPath, tc+".bin"), upsConf)
+	})
+}
+
+// testJiggleVulnerability is a helper that makes sure that proxy correctly
+// responds to malformed DNS packets without crashing.
+func testJiggleVulnerability(tb testing.TB, dataPath string, upsConf *proxy.UpstreamConfig) {
+	tb.Helper()
+
+	p, err := proxy.New(&proxy.Config{
+		UDPListenAddr:  []*net.UDPAddr{net.UDPAddrFromAddrPort(localhostAnyPort)},
+		UpstreamConfig: upsConf,
+		Logger:         testLogger,
+	})
+	require.NoError(tb, err)
+	require.NotNil(tb, p)
+
+	servicetest.RequireRun(tb, p, testTimeout)
+
+	data, err := os.ReadFile(dataPath)
+	require.NoError(tb, err)
+
+	addr := p.Addr(proxy.ProtoUDP)
+	exchangeData(tb, addr.String(), data)
 }
 
 // exchangeData sends the provided data to a proxy running on addr and checks
