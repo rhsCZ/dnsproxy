@@ -29,8 +29,8 @@ trailing_newlines() (
 	find_with_ignore \
 		-type 'f' \
 		'!' '(' \
-		-name '*.exe' \
 		-o -name '*.bin' \
+		-name '*.exe' \
 		-o -name '*.out' \
 		-o -name '*.test' \
 		-o -name 'dnsproxy' \
@@ -50,8 +50,8 @@ trailing_whitespace() {
 	find_with_ignore \
 		-type 'f' \
 		'!' '(' \
-		-name '*.exe' \
 		-o -name '*.bin' \
+		-name '*.exe' \
 		-o -name '*.out' \
 		-o -name '*.test' \
 		-o -name 'dnsproxy' \
