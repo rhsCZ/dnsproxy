@@ -229,7 +229,7 @@ func TestProxy_ServeDNS_formatError(t *testing.T) {
 	exception := "1367_query_with_multiple_edns_options_each_claiming_large_lengths"
 
 	testDataPath := "testdata/" + t.Name()
-	names, err := filepath.Glob(testDataPath + "/*")
+	testNames, err := filepath.Glob(testDataPath + "/*")
 	require.NoError(t, err)
 
 	p, err := proxy.New(&proxy.Config{
@@ -242,13 +242,13 @@ func TestProxy_ServeDNS_formatError(t *testing.T) {
 	servicetest.RequireRun(t, p, testTimeout)
 
 	addr := p.Addr(proxy.ProtoUDP).String()
-	for _, name := range names {
-		t.Run(name, func(t *testing.T) {
+	for _, testName := range testNames {
+		t.Run(testName, func(t *testing.T) {
 			t.Parallel()
 
 			skipDarwin(t, exception)
 
-			testJiggleVulnerability(t, filepath.Join(name), addr)
+			testJiggleVulnerability(t, filepath.Join(testName), addr)
 		})
 	}
 }
