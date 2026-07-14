@@ -225,8 +225,7 @@ func TestProxy_ServeDNS_formatError(t *testing.T) {
 	// actual maximum UDP message size.
 	//
 	// TODO(f.setrakov): Find the other way to fix this case on macOS.
-	// TODO(f.setrakov): !! Consider improving test case names.
-	exception := "1367_query_with_multiple_edns_options_each_claiming_large_lengths"
+	exception := "query_with_multiple_edns_options"
 
 	testDataPath := "testdata/" + t.Name()
 	testNames, err := filepath.Glob(testDataPath + "/*")
