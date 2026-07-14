@@ -227,8 +227,8 @@ func TestProxy_ServeDNS_formatError(t *testing.T) {
 	// TODO(f.setrakov): Find the other way to fix this case on macOS.
 	exception := "query_with_multiple_edns_options"
 
-	testDataPath := "testdata/" + t.Name()
-	testNames, err := filepath.Glob(testDataPath + "/*")
+	testDataPattern := filepath.Join("testdata", t.Name(), "*")
+	testNames, err := filepath.Glob(testDataPattern)
 	require.NoError(t, err)
 
 	p, err := proxy.New(&proxy.Config{
@@ -243,9 +243,9 @@ func TestProxy_ServeDNS_formatError(t *testing.T) {
 	addr := p.Addr(proxy.ProtoUDP).String()
 	for _, testName := range testNames {
 		t.Run(testName, func(t *testing.T) {
-			t.Parallel()
-
 			skipDarwin(t, exception)
+
+			t.Parallel()
 
 			testJiggleVulnerability(t, filepath.Join(testName), addr)
 		})
