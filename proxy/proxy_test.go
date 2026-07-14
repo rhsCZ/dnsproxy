@@ -2,6 +2,8 @@ package proxy_test
 
 import (
 	"net"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -17,11 +19,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// defaultTimeout is a default timeout for tests.
-const defaultTimeout = 10 * time.Second
+const (
+	// defaultTimeout is a default timeout for tests.
+	defaultTimeout = 10 * time.Second
 
-// testLogger is a common logger for tests.
-var testLogger = slogutil.NewDiscardLogger()
+	// testTTL is a common time-to-live value in seconds for tests.
+	testTTL = 60
+)
+
+var (
+	// testLogger is a common logger for tests.
+	testLogger = slogutil.NewDiscardLogger()
+
+	// testIPv4 is a common IPv4 for tests
+	testIPv4 = net.IP{192, 0, 2, 0}
+)
 
 // newCustomUpstreamConfig is a helper function that returns an initialized
 // [*proxy.CustomUpstreamConfig].
@@ -76,9 +88,9 @@ func TestProxy_Resolve_cache(t *testing.T) {
 				Name:   req.Question[0].Name,
 				Rrtype: dns.TypeA,
 				Class:  dns.ClassINET,
-				Ttl:    60,
+				Ttl:    testTTL,
 			},
-			A: net.IP{192, 0, 2, 0},
+			A: testIPv4,
 		})
 
 		return resp, nil
@@ -191,4 +203,105 @@ func TestProxy_Start_closeOnFail(t *testing.T) {
 
 		servicetest.RequireRun(t, p, testTimeout)
 	}))
+}
+
+func TestProxy_ServeDNS_formatError(t *testing.T) {
+	t.Parallel()
+
+	ups := &dnsproxytest.Upstream{
+		OnAddress: func() (addr string) { return testIPv4.String() },
+		OnClose:   func() (err error) { return nil },
+	}
+	ups.OnExchange = func(req *dns.Msg) (resp *dns.Msg, err error) {
+		panic(testutil.UnexpectedCall(req))
+	}
+
+	upsConf := &proxy.UpstreamConfig{
+		Upstreams: []upstream.Upstream{ups},
+	}
+
+	// NOTE: This case must not run on darwin systems by default, because the
+	// default maximum value of UDP datagrams on such systems is less than the
+	// actual maximum UDP message size.
+	//
+	// TODO(f.setrakov): Find the other way to fix this case on macOS.
+	exception := "query_with_multiple_edns_options"
+
+	testDataPattern := filepath.Join("testdata", t.Name(), "*")
+	testNames, err := filepath.Glob(testDataPattern)
+	require.NoError(t, err)
+
+	p, err := proxy.New(&proxy.Config{
+		UDPListenAddr:  []*net.UDPAddr{net.UDPAddrFromAddrPort(localhostAnyPort)},
+		UpstreamConfig: upsConf,
+		Logger:         testLogger,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, p)
+	servicetest.RequireRun(t, p, testTimeout)
+
+	addr := p.Addr(proxy.ProtoUDP).String()
+	for _, testName := range testNames {
+		t.Run(testName, func(t *testing.T) {
+			skipDarwin(t, exception)
+
+			t.Parallel()
+
+			testJiggleVulnerability(t, filepath.Join(testName), addr)
+		})
+	}
+}
+
+// testJiggleVulnerability makes sure that proxy correctly responds to malformed
+// DNS packets without crashing.
+func testJiggleVulnerability(tb testing.TB, dataPath, addr string) {
+	data, err := os.ReadFile(dataPath)
+	require.NoError(tb, err)
+
+	conn := requireDial(tb, addr)
+	requireWritePacket(tb, conn, data)
+	resp := requireReadPacket(tb, conn)
+
+	msg := &dns.Msg{}
+	err = msg.Unpack(resp)
+	require.NoError(tb, err)
+
+	assert.Equal(tb, msg.Rcode, dns.RcodeFormatError)
+}
+
+// requireDial dials the given address and returns the connection.  The
+// connection is closed in the test cleanup.
+func requireDial(tb testing.TB, addr string) (conn net.Conn) {
+	tb.Helper()
+
+	conn, err := net.DialTimeout(string(proxy.ProtoUDP), addr, testTimeout)
+	require.NoError(tb, err)
+	testutil.CleanupAndRequireSuccess(tb, conn.Close)
+
+	deadline := time.Now().Add(testTimeout)
+	require.NoError(tb, conn.SetDeadline(deadline))
+
+	return conn
+}
+
+// requireWritePacket writes data into the given conn.  conn must not be nil.
+func requireWritePacket(tb testing.TB, conn net.Conn, data []byte) {
+	tb.Helper()
+
+	n, err := conn.Write(data)
+	require.NoError(tb, err)
+	require.Equal(tb, len(data), n)
+}
+
+// requireReadPacket reads a DNS packet from the given conn and returns the
+// packet data.  conn must not be nil.
+func requireReadPacket(tb testing.TB, conn net.Conn) (data []byte) {
+	tb.Helper()
+
+	buf := make([]byte, dns.MaxMsgSize)
+	n, err := conn.Read(buf)
+	require.NoError(tb, err)
+	require.Positive(tb, n)
+
+	return buf[:n]
 }
