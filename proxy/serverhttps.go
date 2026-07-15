@@ -64,7 +64,7 @@ func (p *Proxy) listenH3(
 ) (ln *quic.EarlyListener, err error) {
 	tlsConfig := p.TLSConfig.Clone()
 	tlsConfig.NextProtos = []string{"h3"}
-	quicListen, err := quic.ListenAddrEarly(addr.String(), tlsConfig, newServerQUICConfig())
+	quicListen, err := quic.ListenAddrEarly(addr.String(), tlsConfig, newServerDoH3Config())
 	if err != nil {
 		return nil, fmt.Errorf("quic listener: %w", err)
 	}
@@ -72,6 +72,17 @@ func (p *Proxy) listenH3(
 	p.logger.InfoContext(ctx, "listening to h3", "addr", quicListen.Addr())
 
 	return quicListen, nil
+}
+
+// newServerHTTP3Config creates *quic.Config populated with the default
+// settings.  This function is supposed to be used for the DoH3 server only.
+func newServerDoH3Config() (conf *quic.Config) {
+	return &quic.Config{
+		MaxIdleTimeout: maxQUICIdleTimeout,
+		// TODO(f.setrakov): !! Consider using previous DoQ parameters.
+		// Enable 0-RTT by default for all connections on the server-side.
+		Allow0RTT: true,
+	}
 }
 
 // initHTTPSListeners creates TCP/UDP listeners and HTTP/H3 servers.
