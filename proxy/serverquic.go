@@ -546,7 +546,12 @@ func closeQUICConn(conn *quic.Conn, code quic.ApplicationErrorCode, l *slog.Logg
 // This function is supposed to be used for the DoQ server only.
 func newServerQUICConfig() (conf *quic.Config) {
 	return &quic.Config{
-		MaxIdleTimeout:        maxQUICIdleTimeout,
+		MaxIdleTimeout: maxQUICIdleTimeout,
+		// NOTE: Disable unidirectional streams because DNSProxy does not
+		// process them.  Accepting and leaving a large number of open
+		// unidirectional streams can lead to memory exhaustion.
+		//
+		// See AGDNS-4233.
 		MaxIncomingUniStreams: -1,
 		// Enable 0-RTT by default for all connections on the server-side.
 		Allow0RTT: true,

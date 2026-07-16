@@ -79,7 +79,6 @@ func (p *Proxy) listenH3(
 func newServerDoH3Config() (conf *quic.Config) {
 	return &quic.Config{
 		MaxIdleTimeout: maxQUICIdleTimeout,
-		// TODO(f.setrakov): !! Consider using previous DoQ parameters.
 		// Enable 0-RTT by default for all connections on the server-side.
 		Allow0RTT: true,
 	}
