@@ -74,8 +74,8 @@ func (p *Proxy) listenH3(
 	return quicListen, nil
 }
 
-// newServerHTTP3Config creates *quic.Config populated with the default
-// settings.  This function is supposed to be used for the DoH3 server only.
+// newServerDoH3Config creates *quic.Config populated with the default settings.
+// This function is supposed to be used for the DoH3 server only.
 func newServerDoH3Config() (conf *quic.Config) {
 	return &quic.Config{
 		MaxIdleTimeout: maxQUICIdleTimeout,
