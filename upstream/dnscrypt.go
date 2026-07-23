@@ -3,15 +3,12 @@ package upstream
 import (
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"net/url"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/AdguardTeam/dnscrypt"
-	"github.com/AdguardTeam/golibs/errors"
 	"github.com/miekg/dns"
 )
 
@@ -65,21 +62,8 @@ func (p *dnsCrypt) Exchange(req *dns.Msg) (resp *dns.Msg, err error) {
 		defer cancel()
 	}
 
-	resp, err = p.exchangeDNSCrypt(ctx, req)
-	if errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, io.EOF) {
-		// If request times out, it is possible that the server configuration
-		// has been changed.  It is safe to assume that the key was rotated, see
-		// https://dnscrypt.pl/2017/02/26/how-key-rotation-is-automated.
-		// Re-fetch the server certificate info for new requests to not fail.
-		_, _, err = p.resetClient(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		return p.exchangeDNSCrypt(ctx, req)
-	}
-
-	return resp, err
+	// Don't wrap the error, because it's informative enough as is.
+	return p.exchangeDNSCrypt(ctx, req)
 }
 
 // Close implements the [Upstream] interface for *dnsCrypt.

@@ -181,8 +181,10 @@ func TestDNSCrypt_Exchange_deadline(t *testing.T) {
 
 	// Use a shorter timeout to speed up the test.
 	u, err := AddressToUpstream(srvStamp.String(), &Options{
-		Logger:  testLogger,
-		Timeout: 100 * time.Millisecond,
+		Logger: testLogger,
+		// TODO(f.setrakov): Use stale context when [Upstream.Exchange] will
+		// accept a context.
+		Timeout: 1 * time.Nanosecond,
 	})
 	require.NoError(t, err)
 	testutil.CleanupAndRequireSuccess(t, u.Close)
