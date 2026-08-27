@@ -358,7 +358,7 @@ func (p *Proxy) handleQUICStream(ctx context.Context, stream *quic.Stream, conn 
 		return
 	}
 
-	if !validQUICMsg(conn, req, p.logger) {
+	if !validQUICMsg(ctx, conn, req, p.logger) {
 		// If a peer encounters such an error condition, it is considered a
 		// fatal error. It SHOULD forcibly abort the connection using QUIC's
 		// CONNECTION_CLOSE mechanism and SHOULD use the DoQ error code
@@ -425,7 +425,7 @@ func (p *Proxy) respondQUIC(d *DNSContext) error {
 
 // validQUICMsg validates the incoming DNS message and returns false if
 // something is wrong with the message.  conn, req, and l must not be nil.
-func validQUICMsg(conn *quic.Conn, req *dns.Msg, l *slog.Logger) (ok bool) {
+func validQUICMsg(ctx context.Context, conn *quic.Conn, req *dns.Msg, l *slog.Logger) (ok bool) {
 	// See https://www.rfc-editor.org/rfc/rfc9250.html#name-protocol-errors
 
 	// 1. a client or server receives a message with a non-zero Message ID.
@@ -453,7 +453,7 @@ func validQUICMsg(conn *quic.Conn, req *dns.Msg, l *slog.Logger) (ok bool) {
 		for _, option := range opt.Option {
 			// Check for EDNS TCP keepalive option
 			if option.Option() == dns.EDNS0TCPKEEPALIVE {
-				l.Debug("client sent edns0 tcp keepalive option")
+				l.DebugContext(ctx, "client sent edns0 tcp keepalive option")
 
 				return false
 			}
@@ -470,7 +470,11 @@ func validQUICMsg(conn *quic.Conn, req *dns.Msg, l *slog.Logger) (ok bool) {
 	// processed from 0-RTT early data.  Any other transaction received as early
 	// data is treated as a protocol error and aborts the connection.
 	if isNonReplayableEarlyData(conn, req) {
-		l.Debug("client sent non-replayable transaction as 0-rtt data", "opcode", req.Opcode)
+		l.DebugContext(
+			ctx,
+			"client sent non-replayable transaction as 0-rtt data",
+			"opcode", req.Opcode,
+		)
 
 		return false
 	}
